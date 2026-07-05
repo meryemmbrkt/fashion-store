@@ -9,6 +9,7 @@ import com.meryem.fashionstore.mapper.CategoryMapper;
 import com.meryem.fashionstore.repository.CategoryRepository;
 import com.meryem.fashionstore.repository.ProductRepository;
 import com.meryem.fashionstore.repository.StoreRepository;
+import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class CategoryService {
     private final StoreRepository storeRepository;
     private final CategoryMapper categoryMapper;
     private final ProductRepository productRepository;
+    private final SecurityUtil securityUtil;
 
     @Transactional
     public CategoryResponse createCategory(Long storeId, CategoryRequest request) {
@@ -30,6 +32,8 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Kategori eklemek istediğiniz mağaza bulunamadı!"
                 ));
+
+        securityUtil.checkStoreOwnership(store);
 
         Category category = categoryMapper.toEntity(request);
         category.setStore(store);
@@ -50,6 +54,8 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Silmek istediğiniz kategori bulunamadı!"
                 ));
+
+        securityUtil.checkStoreOwnership(category.getStore());
 
         if (productRepository.existsByCategoryId(id)) {
             throw new IllegalArgumentException(

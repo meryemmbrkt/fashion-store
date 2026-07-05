@@ -1,5 +1,6 @@
 package com.meryem.fashionstore.security;
 
+import com.meryem.fashionstore.entity.Store;
 import com.meryem.fashionstore.entity.User;
 import com.meryem.fashionstore.exception.ResourceNotFoundException;
 import com.meryem.fashionstore.repository.UserRepository;
@@ -28,6 +29,14 @@ public class SecurityUtil {
         User currentUser = getCurrentUser();
         if (!currentUser.getId().equals(userId)) {
             throw new AccessDeniedException("Bu işlem için yetkiniz yok!");
+        }
+    }
+
+    /** Mağaza, login olan kullanıcıya ait değilse hata fırlatır */
+    public void checkStoreOwnership(Store store) {
+        User currentUser = getCurrentUser();
+        if (!store.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Bu mağaza üzerinde işlem yapma yetkiniz yok!");
         }
     }
 }

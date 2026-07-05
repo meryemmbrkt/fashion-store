@@ -8,6 +8,7 @@ import com.meryem.fashionstore.exception.ResourceNotFoundException;
 import com.meryem.fashionstore.mapper.StoreMapper;
 import com.meryem.fashionstore.repository.StoreRepository;
 import com.meryem.fashionstore.repository.UserRepository;
+import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final StoreMapper storeMapper;
+    private final SecurityUtil securityUtil;
 
     public List<StoreResponse> getAllStores() {
         return storeRepository.findAll().stream()
@@ -30,6 +32,8 @@ public class StoreService {
 
     @Transactional
     public StoreResponse createStore(StoreRequest request, Long userId) {
+        securityUtil.checkUserAccess(userId);
+
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Mağaza açmak isteyen kullanıcı sistemde bulunamadı!"
@@ -67,6 +71,8 @@ public class StoreService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Silmek istediğiniz mağaza bulunamadı!"
                 ));
+
+        securityUtil.checkStoreOwnership(store);
 
         if (!store.getProducts().isEmpty()) {
             throw new IllegalArgumentException(

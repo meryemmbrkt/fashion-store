@@ -8,7 +8,9 @@ import com.meryem.fashionstore.repository.OrderRepository;
 import com.meryem.fashionstore.repository.ProductRepository;
 import com.meryem.fashionstore.repository.UserRepository;
 import com.meryem.fashionstore.exception.ResourceNotFoundException;
+import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final SecurityUtil securityUtil;
 
     @Transactional
     public OrderResponse createOrderFromBasket(Long userId) {
@@ -44,9 +47,8 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setTotalPrice(basket.getTotalPrice());
-        order.setStatus(OrderStatus.PENDING);  // ✅ OrderStatus enum kullanıldı
+        order.setStatus(OrderStatus.PENDING);
 
-        // ✅ List<OrderItem> (OrderStatus değil)
         List<OrderItem> orderItems = new ArrayList<>();
         for (BasketItem basketItem : basket.getItems()) {
             OrderItem orderItem = new OrderItem();
@@ -81,9 +83,17 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {  // ✅ Enum parametre
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sipariş bulunamadı!"));
+
+        // Admin'in bu siparişte kendi mağazasından ürün olmalı
+        Long currentUserId = securityUtil.getCurrentUser().getId();
+        boolean hasOwnProduct = order.getItems().stream()
+                .anyMatch(item -> item.getProduct().getStore().getUser().getId().equals(currentUserId));
+        if (!hasOwnProduct) {
+            throw new AccessDeniedException("Bu siparişte size ait ürün bulunmuyor!");
+        }
 
         // Sipariş iptal edilirse stoklar geri eklenir
         if (status == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {

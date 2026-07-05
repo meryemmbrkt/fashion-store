@@ -19,8 +19,5 @@ public record ProductRequest(
 
         @NotNull(message = "Ürün stoğu boş bırakılamaz!")
         @Min(value = 0, message = "Ürün stoğu negatif olamaz!")
-        Integer stock,
-
-        @NotNull(message = "Kategori seçilmelidir!")
-        Long categoryId
+        Integer stock
 ) {}

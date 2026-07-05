@@ -12,6 +12,7 @@ import com.meryem.fashionstore.repository.CategoryRepository;
 import com.meryem.fashionstore.repository.OrderItemRepository;
 import com.meryem.fashionstore.repository.ProductRepository;
 import com.meryem.fashionstore.repository.StoreRepository;
+import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final BasketItemRepository basketItemRepository;
     private final OrderItemRepository orderItemRepository;
+    private final SecurityUtil securityUtil;
 
     public List<ProductResponse> getProductsByStore(Long storeId) {
         return productRepository.findByStoreId(storeId).stream()
@@ -50,22 +52,13 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponse addProductToStore(Long storeId, ProductRequest request) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Mağaza bulunamadı!"));
-
-        Product product = productMapper.toEntity(request);
-        product.setStore(store);
-
-        return productMapper.toResponse(productRepository.save(product));
-    }
-
-    @Transactional
     public ProductResponse addProductToStoreAndCategory(Long storeId, Long categoryId, ProductRequest request) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Aradığınız mağaza sistemde bulunamadı!"
                 ));
+
+        securityUtil.checkStoreOwnership(store);
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -94,6 +87,8 @@ public class ProductService {
                         "Silmek istediğiniz ürün bulunamadı!"
                 ));
 
+        securityUtil.checkStoreOwnership(product.getStore());
+
         // Sipariş geçmişinde varsa silinemez (geçmiş bozulmamalı)
         if (orderItemRepository.existsByProductId(id)) {
             throw new IllegalArgumentException(
@@ -115,6 +110,8 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Güncellenmek istenen ürün bulunamadı!"
                 ));
+
+        securityUtil.checkStoreOwnership(product.getStore());
 
         product.setName(request.name());
         product.setDescription(request.description());
