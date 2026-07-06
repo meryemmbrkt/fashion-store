@@ -2,7 +2,6 @@ package com.meryem.fashionstore.controller;
 
 import com.meryem.fashionstore.dto.OrderResponse;
 import com.meryem.fashionstore.entity.OrderStatus;
-import com.meryem.fashionstore.security.SecurityUtil;
 import com.meryem.fashionstore.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,20 +17,20 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final SecurityUtil securityUtil;
+
 
     @PostMapping("/user/{userId}")
     public ResponseEntity<OrderResponse> createOrder(
             @PathVariable Long userId,
             @RequestParam Long addressId) {
-        securityUtil.checkUserAccess(userId);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.createOrderFromBasket(userId, addressId));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByUserId(@PathVariable Long userId) {
-        securityUtil.checkUserAccess(userId);
+
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 

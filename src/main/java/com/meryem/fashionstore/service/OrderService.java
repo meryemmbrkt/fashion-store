@@ -34,6 +34,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrderFromBasket(Long userId, Long addressId) {
+        securityUtil.checkUserAccess(userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
 
@@ -86,6 +87,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getOrdersByUserId(Long userId) {
+        securityUtil.checkUserAccess(userId);
         List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
         return orders.stream()
                 .map(orderMapper::toResponse)

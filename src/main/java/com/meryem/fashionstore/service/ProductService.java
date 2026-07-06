@@ -14,6 +14,7 @@ import com.meryem.fashionstore.repository.ProductRepository;
 import com.meryem.fashionstore.repository.StoreRepository;
 import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -54,62 +56,71 @@ public class ProductService {
     @Transactional
     public ProductResponse addProductToStoreAndCategory(Long storeId, Long categoryId, ProductRequest request) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Aradığınız mağaza sistemde bulunamadı!"
-                ));
+                .orElseThrow(() -> {
+                    log.error("Store not found! storeId={}", storeId);
+                    return new ResourceNotFoundException("Aradığınız mağaza sistemde bulunamadı!");
+                });
 
         securityUtil.checkStoreOwnership(store);
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Aradığınız kategori bu mağazada bulunamadı!"
-                ));
+                .orElseThrow(() -> {
+                    log.error("Category not found! categoryId={}, storeId={}", categoryId, storeId);
+                    return new ResourceNotFoundException("Aradığınız kategori bu mağazada bulunamadı!");
+                });
 
         Product product = productMapper.toEntity(request);
         product.setStore(store);
         product.setCategory(category);
 
-        return productMapper.toResponse(productRepository.save(product));
+        Product savedProduct = productRepository.save(product);
+        log.info("Product created: id={}, name={}, storeId={}", savedProduct.getId(), savedProduct.getName(), storeId);
+
+        return productMapper.toResponse(savedProduct);
     }
 
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Aradığınız ürün sistemde bulunamadı!"
-                ));
+                .orElseThrow(() -> {
+                    log.error("Product not found! productId={}", id);
+                    return new ResourceNotFoundException("Aradığınız ürün sistemde bulunamadı!");
+                });
         return productMapper.toResponse(product);
     }
 
     @Transactional
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Silmek istediğiniz ürün bulunamadı!"
-                ));
+                .orElseThrow(() -> {
+                    log.error("Product to delete not found! productId={}", id);
+                    return new ResourceNotFoundException("Silmek istediğiniz ürün bulunamadı!");
+                });
 
         securityUtil.checkStoreOwnership(product.getStore());
 
-        // Sipariş geçmişinde varsa silinemez (geçmiş bozulmamalı)
         if (orderItemRepository.existsByProductId(id)) {
+            log.warn("Delete blocked, product exists in past orders: productId={}", id);
             throw new IllegalArgumentException(
                     "Bu ürün geçmiş siparişlerde yer aldığı için silinemez!"
             );
         }
 
-        // Sepetlerde varsa önce sepetlerden çıkar
         if (basketItemRepository.existsByProductId(id)) {
+            log.info("Removing product from active baskets before delete: productId={}", id);
             basketItemRepository.deleteByProductId(id);
         }
 
         productRepository.delete(product);
+        log.info("Product deleted: id={}, name={}", id, product.getName());
     }
 
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Güncellenmek istenen ürün bulunamadı!"
-                ));
+                .orElseThrow(() -> {
+                    log.error("Product to update not found! productId={}", id);
+                    return new ResourceNotFoundException("Güncellenmek istenen ürün bulunamadı!");
+                });
 
         securityUtil.checkStoreOwnership(product.getStore());
 
@@ -119,6 +130,7 @@ public class ProductService {
         product.setStock(request.stock());
 
         Product updatedProduct = productRepository.save(product);
+        log.info("Product updated: id={}, name={}", id, updatedProduct.getName());
         return productMapper.toResponse(updatedProduct);
     }
 
@@ -132,9 +144,14 @@ public class ProductService {
     @Transactional
     public void decreaseStock(Long productId, Integer quantity) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ürün bulunamadı!"));
+                .orElseThrow(() -> {
+                    log.error("Product not found for stock decrease! productId={}", productId);
+                    return new ResourceNotFoundException("Ürün bulunamadı!");
+                });
 
         if (product.getStock() < quantity) {
+            log.warn("Insufficient stock: productId={}, requested={}, available={}",
+                    productId, quantity, product.getStock());
             throw new IllegalArgumentException(
                     "Yetersiz stok! Ürün: " + product.getName() + ", Mevcut: " + product.getStock()
             );
@@ -142,5 +159,7 @@ public class ProductService {
 
         product.setStock(product.getStock() - quantity);
         productRepository.save(product);
+        log.info("Stock decreased: productId={}, quantity={}, newStock={}",
+                productId, quantity, product.getStock());
     }
 }
