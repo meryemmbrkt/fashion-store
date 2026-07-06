@@ -12,5 +12,6 @@ public record OrderResponse(
         BigDecimal totalPrice,
         LocalDateTime orderDate,
         OrderStatus status,
+        AddressResponse deliveryAddress,
         List<OrderItemResponse> items
 ) {}

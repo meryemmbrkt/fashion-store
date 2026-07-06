@@ -32,6 +32,26 @@ public class JwtService {
                 .signWith(getSigningKey())
                 .compact();
     }
+    @Value("${jwt.refresh-expiration-ms}")
+    private long refreshExpirationMs;
+
+    public String generateRefreshToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            return "refresh".equals(extractClaims(token).get("type", String.class));
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public String extractEmail(String token) {
         return extractClaims(token).getSubject();

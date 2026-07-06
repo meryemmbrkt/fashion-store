@@ -42,4 +42,6 @@ public class Product {
     @Builder.Default
     @Column(nullable = false)
     private Integer stock = 0;
+    @Version
+    private Long version;
 }

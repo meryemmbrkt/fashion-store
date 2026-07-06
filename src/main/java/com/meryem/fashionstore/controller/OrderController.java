@@ -21,10 +21,12 @@ public class OrderController {
     private final SecurityUtil securityUtil;
 
     @PostMapping("/user/{userId}")
-    public ResponseEntity<OrderResponse> createOrder(@PathVariable Long userId) {
+    public ResponseEntity<OrderResponse> createOrder(
+            @PathVariable Long userId,
+            @RequestParam Long addressId) {
         securityUtil.checkUserAccess(userId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrderFromBasket(userId));
+                .body(orderService.createOrderFromBasket(userId, addressId));
     }
 
     @GetMapping("/user/{userId}")

@@ -2,6 +2,7 @@ package com.meryem.fashionstore.controller;
 
 import com.meryem.fashionstore.dto.LoginRequest;
 import com.meryem.fashionstore.dto.LoginResponse;
+import com.meryem.fashionstore.dto.RefreshRequest;
 import com.meryem.fashionstore.dto.UserRequest;
 import com.meryem.fashionstore.dto.UserResponse;
 import com.meryem.fashionstore.entity.User;
@@ -39,8 +40,30 @@ public class AuthController {
         User user = userService.getUserByEmail(request.email());
         String token = jwtService.generateToken(
                 user.getEmail(), user.getId(), user.getRole().name());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
         return ResponseEntity.ok(new LoginResponse(
-                token, user.getId(), user.getEmail(), user.getRole()));
+                token, refreshToken, user.getId(), user.getEmail(), user.getRole()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        String refreshToken = request.refreshToken();
+
+        if (!jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Geçersiz veya süresi dolmuş refresh token!"
+            );
+        }
+
+        String email = jwtService.extractEmail(refreshToken);
+        User user = userService.getUserByEmail(email);
+
+        String newToken = jwtService.generateToken(
+                user.getEmail(), user.getId(), user.getRole().name());
+        String newRefreshToken = jwtService.generateRefreshToken(user.getEmail());
+
+        return ResponseEntity.ok(new LoginResponse(
+                newToken, newRefreshToken, user.getId(), user.getEmail(), user.getRole()));
     }
 }

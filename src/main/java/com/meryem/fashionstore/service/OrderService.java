@@ -3,6 +3,7 @@ package com.meryem.fashionstore.service;
 import com.meryem.fashionstore.dto.OrderResponse;
 import com.meryem.fashionstore.entity.*;
 import com.meryem.fashionstore.mapper.OrderMapper;
+import com.meryem.fashionstore.repository.AddressRepository;
 import com.meryem.fashionstore.repository.BasketRepository;
 import com.meryem.fashionstore.repository.OrderRepository;
 import com.meryem.fashionstore.repository.ProductRepository;
@@ -29,11 +30,19 @@ public class OrderService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final SecurityUtil securityUtil;
+    private final AddressRepository addressRepository;
 
     @Transactional
-    public OrderResponse createOrderFromBasket(Long userId) {
+    public OrderResponse createOrderFromBasket(Long userId, Long addressId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
+
+        Address deliveryAddress = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teslimat adresi bulunamadı!"));
+
+        if (!deliveryAddress.getCustomer().getId().equals(userId)) {
+            throw new AccessDeniedException("Bu adres size ait değil!");
+        }
 
         Basket basket = basketRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -48,6 +57,7 @@ public class OrderService {
         order.setUser(user);
         order.setTotalPrice(basket.getTotalPrice());
         order.setStatus(OrderStatus.PENDING);
+        order.setDeliveryAddress(deliveryAddress);
 
         List<OrderItem> orderItems = new ArrayList<>();
         for (BasketItem basketItem : basket.getItems()) {
