@@ -41,6 +41,7 @@ public class CategoryService {
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getCategoriesByStore(Long storeId) {
         List<Category> categories = categoryRepository.findByStoreId(storeId);
         return categories.stream()
@@ -66,6 +67,7 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream()

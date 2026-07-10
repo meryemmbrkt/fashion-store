@@ -24,6 +24,7 @@ public class StoreService {
     private final StoreMapper storeMapper;
     private final SecurityUtil securityUtil;
 
+    @Transactional(readOnly = true)
     public List<StoreResponse> getAllStores() {
         return storeRepository.findAll().stream()
                 .map(storeMapper::toResponse)
@@ -49,6 +50,7 @@ public class StoreService {
         return storeMapper.toResponse(storeRepository.save(store));
     }
 
+    @Transactional(readOnly = true)
     public StoreResponse getStoreById(Long id) {
         Store store = storeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -57,6 +59,7 @@ public class StoreService {
         return storeMapper.toResponse(store);
     }
 
+    @Transactional(readOnly = true)
     public StoreResponse getStoreByUserId(Long userId) {
         Store store = storeRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(

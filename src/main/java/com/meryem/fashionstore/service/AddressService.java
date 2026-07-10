@@ -9,6 +9,7 @@ import com.meryem.fashionstore.mapper.AddressMapper;
 import com.meryem.fashionstore.repository.AddressRepository;
 import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class AddressService {
         return addressMapper.toResponse(addressRepository.save(address));
     }
 
+    @Transactional(readOnly = true)
     public List<AddressResponse> getMyAddresses() {
         User currentUser = securityUtil.getCurrentUser();
         return addressRepository.findByCustomerId(currentUser.getId()).stream()
@@ -47,9 +49,7 @@ public class AddressService {
                 .orElseThrow(() -> new ResourceNotFoundException("Adres bulunamadı!"));
 
         if (!address.getCustomer().getId().equals(currentUser.getId())) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "Bu adres size ait değil!"
-            );
+            throw new AccessDeniedException("Bu adres size ait değil!");
         }
 
         addressRepository.delete(address);

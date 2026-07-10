@@ -35,6 +35,7 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrderFromBasket(Long userId, Long addressId) {
         securityUtil.checkUserAccess(userId);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
 
@@ -78,7 +79,6 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Sepeti temizle
         basket.getItems().clear();
         basket.setTotalPrice(BigDecimal.ZERO);
         basketRepository.save(basket);
@@ -86,6 +86,7 @@ public class OrderService {
         return orderMapper.toResponse(savedOrder);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByUserId(Long userId) {
         securityUtil.checkUserAccess(userId);
         List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
@@ -99,7 +100,6 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sipariş bulunamadı!"));
 
-        // Admin'in bu siparişte kendi mağazasından ürün olmalı
         Long currentUserId = securityUtil.getCurrentUser().getId();
         boolean hasOwnProduct = order.getItems().stream()
                 .anyMatch(item -> item.getProduct().getStore().getUser().getId().equals(currentUserId));
@@ -107,7 +107,6 @@ public class OrderService {
             throw new AccessDeniedException("Bu siparişte size ait ürün bulunmuyor!");
         }
 
-        // Sipariş iptal edilirse stoklar geri eklenir
         if (status == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
             order.getItems().forEach(orderItem -> {
                 Product product = orderItem.getProduct();

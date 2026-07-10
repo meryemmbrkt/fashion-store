@@ -101,14 +101,11 @@ public class BasketService {
         recalculateTotalPrice(basket);
 
         Basket savedBasket = basketRepository.save(basket);
-        log.info("Product added to basket: userId={}, productId={}, quantity={}", userId, productId, quantity);
+        log.info("Product added to basket: userId={}, productId={}, quantity={}",
+                userId, productId, quantity);
         return basketMapper.toResponse(savedBasket);
     }
 
-    /**
-     * Sepet kalemini upsert mantığıyla yönetir (PUT semantiği):
-     * quantity'yi doğrudan set eder, ürün sepette yoksa ekler, 0 gelirse çıkarır.
-     */
     @Transactional
     public BasketResponse updateItemQuantity(Long basketId, BasketItemRequest request) {
         Basket basket = basketRepository.findById(basketId)
