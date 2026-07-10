@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,20 +37,24 @@ public class ProductService {
     private final OrderItemRepository orderItemRepository;
     private final SecurityUtil securityUtil;
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getProductsByStore(Long storeId) {
         return productRepository.findByStoreId(storeId).stream()
                 .map(productMapper::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProductsPaged(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("price").ascending());
         return productRepository.findAll(pageable).map(productMapper::toResponse);
     }
 
@@ -79,6 +84,7 @@ public class ProductService {
         return productMapper.toResponse(savedProduct);
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
@@ -134,6 +140,7 @@ public class ProductService {
         return productMapper.toResponse(updatedProduct);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getProductsByCategory(Long categoryId) {
         List<Product> products = productRepository.findByCategoryId(categoryId);
         return products.stream()

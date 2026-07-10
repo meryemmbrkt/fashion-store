@@ -46,15 +46,37 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Herkese açık
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/v1/products/**",
                                 "/api/v1/stores/**",
                                 "/api/v1/categories/**").permitAll()
-                        // Gerisi login ister
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"timestamp\":\"" + java.time.LocalDateTime.now() + "\"," +
+                                            "\"status\":401," +
+                                            "\"error\":\"Unauthorized\"," +
+                                            "\"message\":\"Oturum bulunamadı, lütfen giriş yapın!\"," +
+                                            "\"path\":\"" + request.getRequestURI() + "\"}"
+                            );
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"timestamp\":\"" + java.time.LocalDateTime.now() + "\"," +
+                                            "\"status\":403," +
+                                            "\"error\":\"Forbidden\"," +
+                                            "\"message\":\"Bu işlem için yetkiniz yok!\"," +
+                                            "\"path\":\"" + request.getRequestURI() + "\"}"
+                            );
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)

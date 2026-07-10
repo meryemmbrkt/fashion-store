@@ -16,15 +16,20 @@ public class SecurityUtil {
 
     private final UserRepository userRepository;
 
-    /** Login olmuş kullanıcıyı döner */
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getName() == null
+                || auth.getName().equals("anonymousUser")) {
+            throw new ResourceNotFoundException("Oturum bulunamadı, lütfen giriş yapın!");
+        }
+
         String email = auth.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı: " + email));
     }
 
-    /** URL'deki userId, login olan kullanıcıya ait değilse hata fırlatır */
     public void checkUserAccess(Long userId) {
         User currentUser = getCurrentUser();
         if (!currentUser.getId().equals(userId)) {
@@ -32,7 +37,6 @@ public class SecurityUtil {
         }
     }
 
-    /** Mağaza, login olan kullanıcıya ait değilse hata fırlatır */
     public void checkStoreOwnership(Store store) {
         User currentUser = getCurrentUser();
         if (!store.getUser().getId().equals(currentUser.getId())) {
