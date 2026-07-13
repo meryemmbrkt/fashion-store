@@ -10,3 +10,4 @@ public class FashionStoreApplication {
         SpringApplication.run(FashionStoreApplication.class, args);
     }
 }
+

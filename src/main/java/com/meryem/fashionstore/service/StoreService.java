@@ -44,8 +44,7 @@ public class StoreService {
             throw new IllegalArgumentException("Bu kullanıcının zaten bir mağazası var!");
         }
 
-        Store store = storeMapper.toEntity(request);
-        store.setUser(owner);
+        Store store = storeMapper.toEntity(request,owner);
 
         return storeMapper.toResponse(storeRepository.save(store));
     }
@@ -53,18 +52,14 @@ public class StoreService {
     @Transactional(readOnly = true)
     public StoreResponse getStoreById(Long id) {
         Store store = storeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Aradığınız mağaza sistemde bulunamadı!"
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Aradığınız mağaza sistemde bulunamadı!"));
         return storeMapper.toResponse(store);
     }
 
     @Transactional(readOnly = true)
     public StoreResponse getStoreByUserId(Long userId) {
         Store store = storeRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Bu kullanıcıya ait mağaza bulunamadı!"
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Bu kullanıcıya ait mağaza bulunamadı!"));
         return storeMapper.toResponse(store);
     }
 

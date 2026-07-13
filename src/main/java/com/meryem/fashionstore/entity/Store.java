@@ -40,4 +40,8 @@ public class Store {
     @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
     private List<Category> categories = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean isActive;
+
 }

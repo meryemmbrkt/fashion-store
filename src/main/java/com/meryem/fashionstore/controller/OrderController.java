@@ -34,7 +34,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 
-    // Sadece STORE_ADMIN sipariş durumunu güncelleyebilir
+
     @PreAuthorize("hasRole('STORE_ADMIN')")
     @PutMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateOrderStatus(

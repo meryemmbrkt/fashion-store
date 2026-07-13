@@ -26,10 +26,7 @@ public class AddressService {
     @Transactional
     public AddressResponse createAddress(AddressRequest request) {
         User currentUser = securityUtil.getCurrentUser();
-
-        Address address = addressMapper.toEntity(request);
-        address.setCustomer(currentUser);
-
+        Address address = addressMapper.toEntity(request, currentUser);
         return addressMapper.toResponse(addressRepository.save(address));
     }
 

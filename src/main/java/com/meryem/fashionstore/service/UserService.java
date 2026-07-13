@@ -9,6 +9,7 @@ import com.meryem.fashionstore.exception.EmailAlreadyExistsException;
 import com.meryem.fashionstore.exception.ResourceNotFoundException;
 import com.meryem.fashionstore.mapper.UserMapper;
 import com.meryem.fashionstore.repository.UserRepository;
+import com.meryem.fashionstore.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
@@ -58,6 +60,8 @@ public class UserService {
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateDto userDto) {
+        securityUtil.checkUserAccess(id);
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
 
@@ -77,6 +81,8 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
+        securityUtil.checkUserAccess(id);
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
         userRepository.delete(user);

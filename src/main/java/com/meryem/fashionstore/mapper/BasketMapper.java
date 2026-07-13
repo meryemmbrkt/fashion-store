@@ -4,12 +4,21 @@ import com.meryem.fashionstore.dto.BasketItemResponse;
 import com.meryem.fashionstore.dto.BasketResponse;
 import com.meryem.fashionstore.entity.Basket;
 import com.meryem.fashionstore.entity.BasketItem;
+import com.meryem.fashionstore.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class BasketMapper {
+
+    public BasketItem toEntity(Product product, Basket basket, Integer quantity) {
+        BasketItem newItem = new BasketItem();
+        newItem.setProduct(product);
+        newItem.setBasket(basket);
+        newItem.setQuantity(quantity);
+        return newItem;
+    }
 
     public BasketItemResponse toItemResponse(BasketItem item) {
         return new BasketItemResponse(
@@ -25,7 +34,6 @@ public class BasketMapper {
         List<BasketItemResponse> itemResponses = basket.getItems().stream()
                 .map(this::toItemResponse)
                 .toList();
-
         return new BasketResponse(
                 basket.getId(),
                 basket.getUser().getId(),

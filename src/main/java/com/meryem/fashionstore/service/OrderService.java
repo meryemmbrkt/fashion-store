@@ -55,19 +55,11 @@ public class OrderService {
             throw new IllegalArgumentException("Boş sepet ile sipariş oluşturulamaz!");
         }
 
-        Order order = new Order();
-        order.setUser(user);
-        order.setTotalPrice(basket.getTotalPrice());
-        order.setStatus(OrderStatus.PENDING);
-        order.setDeliveryAddress(deliveryAddress);
+        Order order = orderMapper.toEntity(user, basket.getTotalPrice(), deliveryAddress);
 
         List<OrderItem> orderItems = new ArrayList<>();
         for (BasketItem basketItem : basket.getItems()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(basketItem.getProduct());
-            orderItem.setQuantity(basketItem.getQuantity());
-            orderItem.setPrice(basketItem.getProduct().getPrice());
+            OrderItem orderItem = orderMapper.toItemEntity(order, basketItem);
             orderItems.add(orderItem);
 
             productService.decreaseStock(
@@ -102,7 +94,8 @@ public class OrderService {
 
         Long currentUserId = securityUtil.getCurrentUser().getId();
         boolean hasOwnProduct = order.getItems().stream()
-                .anyMatch(item -> item.getProduct().getStore().getUser().getId().equals(currentUserId));
+                .anyMatch(item -> item.getProduct().getStore().getUser().getId()
+                        .equals(currentUserId));
         if (!hasOwnProduct) {
             throw new AccessDeniedException("Bu siparişte size ait ürün bulunmuyor!");
         }

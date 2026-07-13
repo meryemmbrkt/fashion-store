@@ -35,8 +35,7 @@ public class CategoryService {
 
         securityUtil.checkStoreOwnership(store);
 
-        Category category = categoryMapper.toEntity(request);
-        category.setStore(store);
+        Category category = categoryMapper.toEntity(request, store);
 
         return categoryMapper.toResponse(categoryRepository.save(category));
     }

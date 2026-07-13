@@ -74,12 +74,11 @@ public class ProductService {
                     return new ResourceNotFoundException("Aradığınız kategori bu mağazada bulunamadı!");
                 });
 
-        Product product = productMapper.toEntity(request);
-        product.setStore(store);
-        product.setCategory(category);
+        Product product = productMapper.toEntity(request, store, category);
 
         Product savedProduct = productRepository.save(product);
-        log.info("Product created: id={}, name={}, storeId={}", savedProduct.getId(), savedProduct.getName(), storeId);
+        log.info("Product created: id={}, name={}, storeId={}",
+                savedProduct.getId(), savedProduct.getName(), storeId);
 
         return productMapper.toResponse(savedProduct);
     }

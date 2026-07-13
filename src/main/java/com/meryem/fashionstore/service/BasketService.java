@@ -88,14 +88,9 @@ public class BasketService {
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            BasketItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity);
+            existingItem.get().setQuantity(existingItem.get().getQuantity() + quantity);
         } else {
-            BasketItem newItem = new BasketItem();
-            newItem.setBasket(basket);
-            newItem.setProduct(product);
-            newItem.setQuantity(quantity);
-            basket.getItems().add(newItem);
+            basket.getItems().add(basketMapper.toEntity(product, basket, quantity));
         }
 
         recalculateTotalPrice(basket);
@@ -141,11 +136,7 @@ public class BasketService {
         } else if (existingItem.isPresent()) {
             existingItem.get().setQuantity(request.quantity());
         } else {
-            BasketItem newItem = new BasketItem();
-            newItem.setBasket(basket);
-            newItem.setProduct(product);
-            newItem.setQuantity(request.quantity());
-            basket.getItems().add(newItem);
+            basket.getItems().add(basketMapper.toEntity(product, basket, request.quantity()));
         }
 
         recalculateTotalPrice(basket);

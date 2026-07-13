@@ -19,6 +19,7 @@ public class JwtService {
     private long expirationMs;
 
     private SecretKey getSigningKey() {
+
         return Keys.hmacShaKeyFor(java.util.Base64.getDecoder().decode(secret));
     }
 
