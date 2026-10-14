@@ -21,27 +21,32 @@ public class Store {
     @EqualsAndHashCode.Include
     private Long id;
 
+
     @Column(nullable = false)
     private String storeName;
 
+
     private String link;
+
 
     @ToString.Exclude
     @Builder.Default
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "store")
     private List<Product> products = new ArrayList<>();
+
 
     @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+
     @ToString.Exclude
     @Builder.Default
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "store")
     private List<Category> categories = new ArrayList<>();
 
-    @Column(nullable = false)
-    private boolean isActive;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
 }

@@ -29,6 +29,10 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -38,6 +42,7 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
+
 
     @Builder.Default
     @Column(nullable = false)

@@ -1,6 +1,6 @@
 package com.meryem.fashionstore.controller;
-
-
+import com.meryem.fashionstore.dto.PagedUserResponse;
+import com.meryem.fashionstore.dto.UserFilterRequest;
 import com.meryem.fashionstore.dto.UserResponse;
 import com.meryem.fashionstore.dto.UserUpdateDto;
 import com.meryem.fashionstore.service.UserService;
@@ -20,11 +20,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<PagedUserResponse> getAllUsers(
+            @RequestBody(required = false) UserFilterRequest filter) {
+        return ResponseEntity.ok(userService.getAllUsers(filter));
     }
-// todo dto alinmali
-
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
@@ -39,3 +38,4 @@ public class UserController {
         return ResponseEntity.ok("Kullanıcı başarıyla silindi.");
     }
 }
+

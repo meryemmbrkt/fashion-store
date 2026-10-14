@@ -16,10 +16,12 @@ public class ProductMapper {
                 .description(request.description())
                 .price(request.price())
                 .stock(request.stock())
+                .isActive(true)
                 .store(store)
                 .category(category)
                 .build();
     }
+
 
     public ProductResponse toResponse(Product product) {
         return new ProductResponse(

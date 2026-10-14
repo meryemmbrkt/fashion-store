@@ -1,0 +1,29 @@
+{
+  "number_of_shards": 1,
+  "number_of_replicas": 0,
+  "analysis": {
+    "filter": {
+      "turkish_lowercase": {
+        "type": "lowercase",
+        "language": "turkish"
+      },
+      "product_edge_ngram": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 15
+      }
+    },
+    "analyzer": {
+      "product_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": ["apostrophe", "turkish_lowercase", "asciifolding", "product_edge_ngram"]
+      },
+      "product_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": ["apostrophe", "turkish_lowercase", "asciifolding"]
+      }
+    }
+  }
+}

@@ -30,7 +30,7 @@ public class BasketController {
                 .body(basketService.addProductToBasket(userId, productId, quantity));
     }
 
-    // Sepet kalemini yönetir: adedi set eder, yoksa ekler, 0 ise çıkarır
+
     @PutMapping("/{basketId}/items")
     public ResponseEntity<BasketResponse> updateItemQuantity(
             @PathVariable Long basketId,

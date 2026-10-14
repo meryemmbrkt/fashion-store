@@ -9,11 +9,14 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+
 @Service
 public class JwtService {
 
     @Value("${jwt.secret}")
     private String secret;
+
+
 
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
@@ -33,6 +36,7 @@ public class JwtService {
                 .signWith(getSigningKey())
                 .compact();
     }
+
     @Value("${jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
@@ -58,6 +62,7 @@ public class JwtService {
         return extractClaims(token).getSubject();
     }
 
+
     public Long extractUserId(String token) {
         return extractClaims(token).get("userId", Long.class);
     }
@@ -70,6 +75,7 @@ public class JwtService {
             return false;
         }
     }
+
 
     private Claims extractClaims(String token) {
         return Jwts.parser()
