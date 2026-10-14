@@ -40,15 +40,19 @@ public class AddressService {
 
     @Transactional
     public void deleteAddress(Long id) {
+
         User currentUser = securityUtil.getCurrentUser();
+
 
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Adres bulunamadı!"));
+
 
         if (!address.getCustomer().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Bu adres size ait değil!");
         }
 
         addressRepository.delete(address);
+
     }
 }

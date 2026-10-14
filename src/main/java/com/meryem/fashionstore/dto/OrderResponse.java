@@ -13,5 +13,6 @@ public record OrderResponse(
         LocalDateTime orderDate,
         OrderStatus status,
         AddressResponse deliveryAddress,
+        String statusLabel,
         List<OrderItemResponse> items
-) {}
+        ) {}

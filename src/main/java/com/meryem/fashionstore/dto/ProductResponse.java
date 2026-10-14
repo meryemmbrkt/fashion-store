@@ -10,4 +10,6 @@ public record ProductResponse(
         Integer stock,
         String storeName,
         String categoryName
-) {}
+)
+{
+}
